@@ -8,12 +8,13 @@ export const tripTypes: { value: TripType; label: string }[] = [
   { value: 'international', label: '🌍 International Travel' },
 ];
 
-export type WeatherCondition = 'hot' | 'cold' | 'rainy' | 'snowy';
+export type WeatherCondition = 'hot' | 'cold' | 'rainy' | 'snowy' | 'mixed';
 export const weatherConditions: { value: WeatherCondition; label: string }[] = [
   { value: 'hot', label: '☀️ Hot' },
   { value: 'cold', label: '❄️ Cold' },
   { value: 'rainy', label: '🌧️ Rainy' },
   { value: 'snowy', label: '🌨️ Snowy' },
+  { value: 'mixed', label: '⛅ Mixed' },
 ];
 
 export type Category = 'Clothing' | 'Tech' | 'Documents' | 'Toiletries' | 'Miscellaneous';

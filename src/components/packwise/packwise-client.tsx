@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useEffect, useCallback } from 'react';
+import { useState, useTransition, useEffect, useCallback, useRef } from 'react';
 import { generateChecklistAction } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import type { GenerateSmartChecklistInput } from '@/ai/flows/generate-smart-checklist';
@@ -31,6 +31,8 @@ export default function PackwiseClient() {
   const [title, setTitle] = useState('My Awesome Trip');
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const generationDataRef = useRef<GenerateSmartChecklistInput | null>(null);
 
   useEffect(() => {
     try {
@@ -54,38 +56,38 @@ export default function PackwiseClient() {
     }
   }, [checklist, title]);
   
+  const runGeneration = useCallback((data: GenerateSmartChecklistInput) => {
+    startTransition(async () => {
+      const result = await generateChecklistAction(data);
+      if ('error' in result) {
+        toast({
+          variant: 'destructive',
+          title: 'Uh oh! Something went wrong.',
+          description: result.error,
+        });
+      } else if (result.checklist) {
+        const newItems = result.checklist.map((item) => ({
+          id: crypto.randomUUID(),
+          name: item.name,
+          packed: false,
+          category: item.category,
+        }));
+        setChecklist(newItems);
+        setTitle(`${data.tripType} to somewhere ${data.weatherConditions}`);
+        toast({
+          title: 'Checklist generated!',
+          description: 'Your smart packing list is ready.',
+        });
+      }
+    });
+  }, [toast]);
+  
   const handleGenerate = (data: GenerateSmartChecklistInput) => {
-    const runGeneration = () => {
-       startTransition(async () => {
-        const result = await generateChecklistAction(data);
-        if ('error' in result) {
-          toast({
-            variant: 'destructive',
-            title: 'Uh oh! Something went wrong.',
-            description: result.error,
-          });
-        } else if (result.checklist) {
-          const newItems = result.checklist.map((name) => ({
-            id: crypto.randomUUID(),
-            name,
-            packed: false,
-            category: 'Miscellaneous' as Category,
-          }));
-          setChecklist(newItems);
-          setTitle(`${data.tripType} to somewhere ${data.weatherConditions}`);
-          toast({
-            title: 'Checklist generated!',
-            description: 'Your smart packing list is ready.',
-          });
-        }
-      });
-    };
-
     if (checklist.length > 0) {
-      const trigger = document.getElementById('generate-confirm-trigger');
-      if (trigger) trigger.click();
+      generationDataRef.current = data;
+      setShowConfirmDialog(true);
     } else {
-      runGeneration();
+      runGeneration(data);
     }
   };
   
@@ -115,12 +117,15 @@ export default function PackwiseClient() {
     setChecklist(prev => prev.map(item => ({...item, packed: false})))
   }, []);
 
+  const handleConfirmGeneration = () => {
+    if(generationDataRef.current) {
+      runGeneration(generationDataRef.current);
+    }
+    setShowConfirmDialog(false);
+  }
 
   const GenerationConfirmDialog = () => (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button id="generate-confirm-trigger" className="hidden">Confirm</Button>
-      </AlertDialogTrigger>
+    <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
@@ -130,10 +135,7 @@ export default function PackwiseClient() {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={() => {
-            const form = document.querySelector('form');
-            if(form) form.requestSubmit();
-          }}>
+          <AlertDialogAction onClick={handleConfirmGeneration}>
             Yes, generate new list
           </AlertDialogAction>
         </AlertDialogFooter>

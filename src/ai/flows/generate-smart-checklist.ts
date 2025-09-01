@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { categories, type Category } from '@/lib/types';
 
 const GenerateSmartChecklistInputSchema = z.object({
   tripType: z
@@ -26,8 +27,13 @@ const GenerateSmartChecklistInputSchema = z.object({
 });
 export type GenerateSmartChecklistInput = z.infer<typeof GenerateSmartChecklistInputSchema>;
 
+const ChecklistItemSchema = z.object({
+  name: z.string().describe('The name of the packing item.'),
+  category: z.enum(categories).describe('The category of the packing item.'),
+});
+
 const GenerateSmartChecklistOutputSchema = z.object({
-  checklist: z.array(z.string()).describe('A list of suggested packing items.'),
+  checklist: z.array(ChecklistItemSchema).describe('A list of suggested packing items.'),
 });
 export type GenerateSmartChecklistOutput = z.infer<typeof GenerateSmartChecklistOutputSchema>;
 
@@ -45,7 +51,9 @@ const prompt = ai.definePrompt({
   Duration: {{duration}} days
   Weather Conditions: {{weatherConditions}}
 
-  Generate a list of essential packing items tailored for this trip. Be concise and only include the item name.  Consider the duration and weather conditions when determining quantities and specific items.
+  Generate a list of essential packing items tailored for this trip. Be concise and only include the item name. Consider the duration and weather conditions when determining quantities and specific items.
+  
+  Categorize each item into one of the following categories: ${categories.join(', ')}.
 `,
 });
 

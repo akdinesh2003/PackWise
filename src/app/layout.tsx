@@ -1,11 +1,18 @@
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
+import { DM_Sans } from 'next/font/google'
 
 export const metadata: Metadata = {
   title: 'PackWise | Smart Packing Checklist Generator',
   description: 'Pack smart. Travel light. Never forget again.',
 };
+
+const fontBody = DM_Sans({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-body',
+})
 
 export default function RootLayout({
   children,
@@ -13,12 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet" />
-      </head>
+    <html lang="en" suppressHydrationWarning className={`${fontBody.variable}`}>
       <body className="font-body antialiased">
         {children}
         <Toaster />

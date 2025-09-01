@@ -1,10 +1,10 @@
 'use server';
 
-import { generateSmartChecklist, type GenerateSmartChecklistInput } from '@/ai/flows/generate-smart-checklist';
+import { generateSmartChecklist, type GenerateSmartChecklistInput, type GenerateSmartChecklistOutput } from '@/ai/flows/generate-smart-checklist';
 
 export async function generateChecklistAction(
   input: GenerateSmartChecklistInput
-): Promise<{ checklist: string[] } | { error: string }> {
+): Promise<GenerateSmartChecklistOutput | { error: string }> {
   try {
     const result = await generateSmartChecklist(input);
     return result;
