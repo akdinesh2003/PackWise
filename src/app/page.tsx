@@ -1,3 +1,9 @@
+import PackwiseClient from '@/components/packwise/packwise-client';
+
 export default function Home() {
-  return <></>;
+  return (
+    <main>
+      <PackwiseClient />
+    </main>
+  );
 }
